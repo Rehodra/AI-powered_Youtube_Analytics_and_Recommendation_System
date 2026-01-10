@@ -1,2 +1,2 @@
-# AI-powered_Youtube_Analytics_and_Recommendation_System
-AI-powered_Youtube_Analytics_and_Recommendation_System for content creators
+# AI-powered Youtube Analytics and Recommendation System
+AI-powered Youtube Analytics and Recommendation System for content creators
