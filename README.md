@@ -18,14 +18,14 @@
   <tr>
     <td colspan="2">
       <h3>Landing Page</h3>
-      <img src="./yt-recommender/screenshots/home.png" alt="TubeIntelligence Home" />
+      <img width="1068" height="650" alt="image" src="https://github.com/user-attachments/assets/8156b88c-e8b6-4366-848f-6b90e5f65d09" />
       <p align="center"><em>Clean, modern interface showcasing the platform's core value proposition</em></p>
     </td>
   </tr>
   <tr>
     <td colspan="2">
       <h3>Analysis Configuration</h3>
-      <img src="./yt-recommender/screenshots/audit.png" alt="Configure Analysis" />
+      <img width="1064" height="680" alt="image" src="https://github.com/user-attachments/assets/0a9454e5-7436-43c3-8de3-49ad03e7023d" />
       <p align="center"><em>Select AI-powered intelligence modules for your channel audit</em></p>
     </td>
   </tr>
@@ -36,23 +36,23 @@
   </tr>
   <tr>
     <td width="50%">
-      <img src="./yt-recommender/screenshots/report-detail.png" alt="Semantic Title Engine Analysis" />
+      <img width="1024" height="613" alt="image" src="https://github.com/user-attachments/assets/531cd894-ac06-410c-9f0c-9f482f5208a5" />
       <p align="center"><em>Semantic Title Engine - AI-generated title alternatives with CTR predictions</em></p>
     </td>
     <td width="50%">
-      <img src="./yt-recommender/screenshots/trend-intelligence.png" alt="Trend Intelligence Dashboard" />
+      <img width="1024" height="588" alt="image" src="https://github.com/user-attachments/assets/768afa93-dee2-41a7-adf3-ef12aeb5abc3" />
       <p align="center"><em>Trend Intelligence - 48-hour early trend detection and content ideas</em></p>
     </td>
   </tr>
   <tr>
     <td colspan="2">
-      <img src="./yt-recommender/screenshots/ctr-analysis-1.png" alt="Predictive CTR Analysis - Score" />
+      <img width="1024" height="614" alt="image" src="https://github.com/user-attachments/assets/2a13e1c6-dbc5-4b20-89e1-7f875c0c01d3" />
       <p align="center"><em>Predictive CTR Analysis - Current CTR score and industry comparison</em></p>
     </td>
   </tr>
   <tr>
     <td colspan="2">
-      <img src="./yt-recommender/screenshots/ctr-analysis-2.png" alt="Predictive CTR Analysis - Recommendations" />
+     <img width="1024" height="543" alt="image" src="https://github.com/user-attachments/assets/c5455d8f-b976-456e-9329-eba60bb6de92" />
       <p align="center"><em>Predictive CTR Analysis - Optimization recommendations and psychological triggers</em></p>
     </td>
   </tr>
@@ -159,16 +159,15 @@ yt-recommender/
 │   │   └── main.py        # Application entry point
 │   ├── requirements.txt
 │   └── .env
-├── frontend/
-│   ├── src/
-│   │   ├── components/    # UI components (audit, layout, ui)
-│   │   ├── context/       # State management
-│   │   ├── pages/         # Application pages
-│   │   ├── services/      # API client
-│   │   └── main.jsx       # React entry point
-│   ├── package.json
-│   └── .env
-└── README.md
+└── frontend/
+    ├── src/
+    │   ├── components/    # UI components (audit, layout, ui)
+    │   ├── context/       # State management
+    │   ├── pages/         # Application pages
+    │   ├── services/      # API client
+    │   └── main.jsx       # React entry point
+    ├── package.json
+    └── .env
 ```
 
 ## Getting Started
