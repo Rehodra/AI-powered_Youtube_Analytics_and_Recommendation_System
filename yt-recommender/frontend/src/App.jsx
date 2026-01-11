@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useNavigate, Navigate } from "react-router-dom";
 import { useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import Navbar from "./components/layout/Navbar";
@@ -34,6 +34,7 @@ function AppContent() {
           <Route path="/auth/callback" element={<OAuthCallback />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/audit" element={<Audit />} />
+          <Route path="/dashboard" element={<Navigate to="/audit" replace />} />
           <Route path="/reports" element={<Reports />} />
           <Route path="/reports/:id" element={<ReportDetail />} />
         </Routes>
@@ -63,6 +64,7 @@ function OAuthCallback() {
       // Fetch user data
       authApi.getCurrentUser().then((userData) => {
         updateUser(userData);
+        // Users start with free plan, go directly to audit
         navigate('/audit');
       }).catch(() => {
         navigate('/login');

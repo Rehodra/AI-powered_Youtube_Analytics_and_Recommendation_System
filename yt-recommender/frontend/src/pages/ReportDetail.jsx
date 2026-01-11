@@ -1,5 +1,6 @@
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useReports } from '../context/ReportsContext';
+import { useAuth } from '../context/AuthContext';
 import { useState } from 'react';
 
 import {
@@ -17,7 +18,9 @@ import {
     TrendingUp,
     Download,
     Loader2,
-    Printer
+    Printer,
+    Lock,
+    Zap
 } from 'lucide-react';
 import FadeIn from '../components/ui/FadeIn';
 
@@ -38,10 +41,39 @@ const parseFormattedText = (text) => {
 const ReportDetail = () => {
     const { id } = useParams();
     const { getReport } = useReports();
+    const { user } = useAuth();
     const navigate = useNavigate();
     const [generatingPDF, setGeneratingPDF] = useState(false);
 
     const report = getReport(id);
+
+    // Check if user is premium
+    const isPremiumUser = user?.plan && user.plan.toLowerCase() !== 'free';
+
+    // Define dummy premium services for upsell
+    const dummyPremiumServices = [
+        {
+            key: 'advanced_analytics',
+            name: 'Advanced Analytics Dashboard',
+            icon: BarChart3,
+            color: 'violet',
+            description: 'Deep-dive metrics, audience retention analysis, and performance forecasting'
+        },
+        {
+            key: 'competitor_intelligence',
+            name: 'Competitor Intelligence',
+            icon: Target,
+            color: 'cyan',
+            description: 'Track competitors, benchmark performance, and identify content gaps'
+        },
+        {
+            key: 'revenue_optimization',
+            name: 'Revenue Optimization',
+            icon: TrendingUp,
+            color: 'emerald',
+            description: 'Monetization strategies, sponsorship opportunities, and revenue projections'
+        }
+    ];
 
     const handleSavePDF = () => {
         setGeneratingPDF(true);
@@ -94,7 +126,8 @@ const ReportDetail = () => {
         });
     };
 
-    const serviceDetails = report.aiReport?.services || {};
+    const allServiceDetails = report.aiReport?.services || {};
+
     const serviceNames = {
         semantic_title_engine: { name: 'Semantic Title Engine', icon: Target, color: 'sky' },
         predictive_ctr_analysis: { name: 'Predictive CTR Analysis', icon: BarChart3, color: 'purple' },
@@ -152,7 +185,7 @@ const ReportDetail = () => {
                                     rel="noopener noreferrer"
                                     className="inline-flex items-center gap-1.5 text-sky-600 hover:underline font-bold text-[10px] uppercase tracking-widest transition-colors"
                                 >
-                                    Verify on YouTube
+                                    Visit YouTube Channel
                                     <ExternalLink size={12} />
                                 </a>
                                 <button
@@ -178,7 +211,7 @@ const ReportDetail = () => {
                 </FadeIn>
 
                 {/* AI Analysis Results */}
-                {Object.keys(serviceDetails).length === 0 ? (
+                {Object.keys(allServiceDetails).length === 0 ? (
                     <FadeIn delay={100}>
                         <div className="bg-white rounded-xl border border-slate-200 p-10 text-center shadow-sm">
                             <div className="inline-flex items-center justify-center p-3 bg-amber-50 rounded-full mb-4">
@@ -190,7 +223,8 @@ const ReportDetail = () => {
                     </FadeIn>
                 ) : (
                     <div className="space-y-4">
-                        {Object.entries(serviceDetails).map(([serviceKey, serviceData], index) => {
+                        {/* All Real AI Services - Show to everyone */}
+                        {Object.entries(allServiceDetails).map(([serviceKey, serviceData], index) => {
                             const meta = serviceNames[serviceKey] || { name: serviceKey, icon: Target, color: 'slate' };
                             const IconComponent = meta.icon;
 
@@ -206,12 +240,59 @@ const ReportDetail = () => {
 
                                         <div className="p-5 md:p-6">
                                             {/* Render service-specific content */}
-                                            {renderServiceContent(serviceKey, serviceData)}
+                                            {serviceData ? renderServiceContent(serviceKey, serviceData) : (
+                                                <p className="text-xs text-slate-500">No data available for this service.</p>
+                                            )}
                                         </div>
                                     </div>
                                 </FadeIn>
                             );
                         })}
+
+                        {/* Dummy Premium Services - Show only for Free Users */}
+                        {!isPremiumUser && (
+                            <FadeIn delay={Object.keys(allServiceDetails).length * 50}>
+                                <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl border border-slate-700 shadow-lg overflow-hidden">
+                                    <div className="p-6 md:p-8 text-center">
+                                        <div className="inline-flex items-center justify-center p-3 bg-sky-500/20 rounded-full mb-4">
+                                            <Lock className="text-sky-400" size={28} />
+                                        </div>
+                                        <h3 className="text-lg font-bold text-white mb-2">Premium Intelligence Locked</h3>
+                                        <p className="text-sm text-slate-300 mb-6 max-w-md mx-auto leading-relaxed">
+                                            Unlock {dummyPremiumServices.length} advanced AI services including analytics dashboards, competitor tracking, and revenue optimization.
+                                        </p>
+
+                                        {/* Locked Premium Services Grid */}
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6 max-w-2xl mx-auto">
+                                            {dummyPremiumServices.map((service) => {
+                                                const IconComponent = service.icon;
+                                                return (
+                                                    <div key={service.key} className="bg-slate-800/50 rounded-lg p-4 border border-slate-700/50 text-left">
+                                                        <div className="flex items-center gap-2 mb-2">
+                                                            <IconComponent size={16} className="text-slate-400" />
+                                                            <Lock size={12} className="text-slate-500" />
+                                                        </div>
+                                                        <p className="text-xs font-bold text-slate-200 mb-1">{service.name}</p>
+                                                        <p className="text-[10px] text-slate-400 leading-relaxed">{service.description}</p>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+
+                                        <Link
+                                            to="/pricing"
+                                            className="inline-flex items-center gap-2 bg-gradient-to-r from-sky-500 to-sky-600 text-white font-bold py-3 px-8 rounded-lg text-sm uppercase tracking-widest hover:from-sky-600 hover:to-sky-700 transition-all shadow-lg shadow-sky-500/20"
+                                        >
+                                            <Zap size={16} />
+                                            Upgrade to Pro
+                                        </Link>
+                                        <p className="text-xs text-slate-400 mt-4">
+                                            Starting at <span className="font-bold text-white">$19/month</span> • Unlimited analyses
+                                        </p>
+                                    </div>
+                                </div>
+                            </FadeIn>
+                        )}
                     </div>
                 )}
             </div>
@@ -221,57 +302,60 @@ const ReportDetail = () => {
 
 // Helper function to render service-specific content
 const renderServiceContent = (serviceKey, data) => {
+    // Debug logging to see exact data structure
+    console.log(`=== Rendering ${serviceKey} ===`);
+    console.log('Full data object:', data);
+
+    if (serviceKey === 'semantic_title_engine') {
+        console.log('channel_analysis:', data.channel_analysis);
+        console.log('suggestions:', data.suggestions);
+        console.log('growth_tips:', data.growth_tips);
+    }
+
+    if (serviceKey === 'predictive_ctr_analysis') {
+        console.log('estimated_overall_channel_ctr:', data.estimated_overall_channel_ctr);
+        console.log('what_is_working_or_missing:', data.what_is_working_or_missing);
+        console.log('working type:', typeof data.what_is_working_or_missing?.working);
+        console.log('working is array?:', Array.isArray(data.what_is_working_or_missing?.working));
+    }
+
     switch (serviceKey) {
         case 'semantic_title_engine':
             return (
                 <div className="space-y-6">
                     {/* Channel Analysis */}
-                    {(data.channelAnalysis || data.channel_analysis) && (
+                    {data.channel_analysis?.overall_assessment && (
                         <div>
-                            <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-3">Channel Profile</h3>
+                            <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-3">Channel Analysis</h3>
                             <div className="bg-slate-50 rounded-lg p-4 border border-slate-100">
-                                {typeof (data.channelAnalysis || data.channel_analysis) === 'object' ? (
-                                    <div className="space-y-3 text-slate-700 text-xs">
-                                        {data.channel_analysis?.overall_assessment && (
-                                            <p className="leading-relaxed">{data.channel_analysis.overall_assessment}</p>
-                                        )}
-                                        {data.channel_analysis?.content_themes && (
-                                            <div>
-                                                <span className="font-bold text-slate-900 tracking-tight">Thematic Clusters: </span>
-                                                {data.channel_analysis.content_themes}
-                                            </div>
-                                        )}
-                                    </div>
-                                ) : (
-                                    <p className="text-slate-700 text-xs leading-relaxed">{data.channelAnalysis || data.channel_analysis}</p>
-                                )}
+                                <p className="text-slate-700 text-xs leading-relaxed">{data.channel_analysis.overall_assessment}</p>
                             </div>
                         </div>
                     )}
 
-                    {/* Video Breakdown */}
-                    {((data.videoAnalyses && data.videoAnalyses.length > 0) || (data.suggestions && data.suggestions.length > 0) || (data.video_suggestions && data.video_suggestions.length > 0)) && (
+                    {/* Video Title Optimization */}
+                    {data.suggestions && data.suggestions.length > 0 && (
                         <div>
-                            <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-4">Asset Optimization</h3>
+                            <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-4">Title Optimization</h3>
                             <div className="grid gap-4">
-                                {(data.videoAnalyses || data.suggestions || data.video_suggestions || []).map((video, idx) => (
+                                {data.suggestions.map((video, idx) => (
                                     <div key={idx} className="border border-slate-100 rounded-lg p-4 bg-white hover:border-sky-100 transition-colors">
                                         <div className="flex items-start gap-3 mb-3">
                                             <div className="flex-shrink-0 w-6 h-6 rounded bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-600">
                                                 {idx + 1}
                                             </div>
                                             <h4 className="text-xs font-bold text-slate-900 leading-tight">
-                                                {video.originalTitle || video.original_title}
+                                                {video.original_title}
                                             </h4>
                                         </div>
 
                                         <div className="pl-9 space-y-4">
-                                            {/* Issues */}
-                                            {(video.currentIssues || video.current_issues) && (video.currentIssues || video.current_issues).length > 0 && (
+                                            {/* Current Issues */}
+                                            {video.current_issues && video.current_issues.length > 0 && (
                                                 <div>
                                                     <p className="text-[9px] font-bold text-rose-600 uppercase tracking-widest mb-1.5 ml-1">Friction Points</p>
                                                     <ul className="space-y-1">
-                                                        {(video.currentIssues || video.current_issues).map((issue, i) => (
+                                                        {video.current_issues.map((issue, i) => (
                                                             <li key={i} className="text-[11px] text-slate-600 flex items-start gap-2">
                                                                 <span className="w-1 h-1 rounded-full bg-rose-400 mt-1.5 flex-shrink-0"></span>
                                                                 {issue}
@@ -281,39 +365,31 @@ const renderServiceContent = (serviceKey, data) => {
                                                 </div>
                                             )}
 
-                                            {/* Alternatives */}
-                                            {(video.alternatives || video.alternative_titles) && (video.alternatives || video.alternative_titles).length > 0 && (
+                                            {/* Alternative Titles */}
+                                            {video.alternative_titles && video.alternative_titles.length > 0 && (
                                                 <div>
                                                     <p className="text-[9px] font-bold text-sky-600 uppercase tracking-widest mb-2 ml-1">Recommended Variants</p>
                                                     <div className="grid gap-2">
-                                                        {(video.alternatives || video.alternative_titles).map((alt, i) => {
-                                                            const title = alt.title || alt.suggested_title || alt.new_suggested_title || alt.alternative_title || alt.new_title || '';
-                                                            const ctr = alt.ctrPotential || alt.ctr_potential_rating || alt.ctr_rating || alt.rating || alt.ctr_potential || '';
-                                                            const why = alt.whyEffective || alt.why || alt.why_it_s_effective || alt.why_its_effective || alt.explanation || alt.reasoning || '';
-
-                                                            return (
-                                                                <div key={i} className="bg-sky-50/30 rounded-lg p-3 border border-sky-100/50">
-                                                                    {title && (
-                                                                        <div className="font-bold text-slate-900 text-xs mb-1.5">
-                                                                            "{title}"
-                                                                        </div>
-                                                                    )}
-                                                                    <div className="flex flex-col gap-1.5 text-[11px]">
-                                                                        {ctr && (
-                                                                            <span className="inline-flex items-center gap-1 text-sky-700 font-bold uppercase tracking-tight">
-                                                                                <BarChart3 size={10} />
-                                                                                CTR Index: {ctr}/10
-                                                                            </span>
-                                                                        )}
-                                                                        {why && (
-                                                                            <span className="text-slate-500 italic">
-                                                                                {parseFormattedText(why)}
-                                                                            </span>
-                                                                        )}
-                                                                    </div>
+                                                        {video.alternative_titles.map((alt, i) => (
+                                                            <div key={i} className="bg-sky-50/30 rounded-lg p-3 border border-sky-100/50">
+                                                                <div className="font-bold text-slate-900 text-xs mb-1.5">
+                                                                    "{alt.new_suggested_title}"
                                                                 </div>
-                                                            );
-                                                        })}
+                                                                <div className="flex flex-col gap-1.5 text-[11px]">
+                                                                    {alt.ctr_potential_rating && (
+                                                                        <span className="inline-flex items-center gap-1 text-sky-700 font-bold uppercase tracking-tight">
+                                                                            <BarChart3 size={10} />
+                                                                            CTR Index: {alt.ctr_potential_rating}/10
+                                                                        </span>
+                                                                    )}
+                                                                    {alt.why_it_s_effective && (
+                                                                        <span className="text-slate-600 leading-relaxed">
+                                                                            <span className="font-semibold text-slate-700">Why it works:</span> {alt.why_it_s_effective}
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        ))}
                                                     </div>
                                                 </div>
                                             )}
@@ -325,22 +401,17 @@ const renderServiceContent = (serviceKey, data) => {
                     )}
 
                     {/* Growth Tips */}
-                    {(data.growthTips || data.growth_tips) && (data.growthTips || data.growth_tips).length > 0 && (
+                    {data.growth_tips && data.growth_tips.length > 0 && (
                         <div>
-                            <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-4">Growth Protocols</h3>
-                            <div className="bg-amber-50/50 rounded-lg p-4 border border-amber-100">
-                                <ul className="space-y-3">
-                                    {(data.growthTips || data.growth_tips).map((tip, i) => {
-                                        const tipText = typeof tip === 'string' ? tip : tip.tip || tip.specific_action || JSON.stringify(tip);
-                                        return (
-                                            <li key={i} className="flex gap-3 text-xs text-slate-700">
-                                                <div className="mt-0.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-amber-200 text-amber-800 text-[9px] font-bold">
-                                                    {i + 1}
-                                                </div>
-                                                <span className="leading-relaxed">{parseFormattedText(tipText)}</span>
-                                            </li>
-                                        );
-                                    })}
+                            <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-3">Growth Tips</h3>
+                            <div className="bg-gradient-to-br from-sky-50 to-indigo-50 rounded-lg p-4 border border-sky-100">
+                                <ul className="space-y-2">
+                                    {data.growth_tips.map((tip, i) => (
+                                        <li key={i} className="text-xs text-slate-700 flex items-start gap-2">
+                                            <span className="text-sky-600 font-bold flex-shrink-0">•</span>
+                                            <span className="leading-relaxed">{parseFormattedText(tip)}</span>
+                                        </li>
+                                    ))}
                                 </ul>
                             </div>
                         </div>
@@ -351,33 +422,88 @@ const renderServiceContent = (serviceKey, data) => {
         case 'predictive_ctr_analysis':
             return (
                 <div className="space-y-6">
-                    {data.estimatedCTR && (
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="bg-purple-50 rounded-lg p-4 border border-purple-100 text-center">
-                                <div className="text-2xl font-bold text-purple-600 mb-0.5">{data.estimatedCTR}%</div>
-                                <div className="text-[9px] font-bold text-purple-900/60 uppercase tracking-widest">Estimated CTR</div>
+                    {/* CTR Score Display */}
+                    {data.score !== undefined && (
+                        <div className="bg-purple-50 rounded-lg p-5 border border-purple-100">
+                            <div className="flex items-center justify-between mb-4">
+                                <div>
+                                    <h4 className="text-[10px] font-bold text-purple-900/60 uppercase tracking-widest mb-2">Current CTR Score</h4>
+                                    <div className="text-3xl font-bold text-purple-600">{data.score}<span className="text-lg text-purple-400">/10</span></div>
+                                </div>
+                                {data.potential_increase && (
+                                    <div className="text-right">
+                                        <p className="text-[9px] font-bold text-purple-900/60 uppercase tracking-widest mb-1">Potential Increase</p>
+                                        <div className="text-xl font-bold text-emerald-600">+{data.potential_increase}</div>
+                                    </div>
+                                )}
                             </div>
-                            <div className="bg-slate-50 rounded-lg p-4 border border-slate-100 text-center">
-                                <div className="text-2xl font-bold text-slate-700 mb-0.5">{data.industryAverage}%</div>
-                                <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Industry Avg</div>
+                            {data.reasoning && (
+                                <p className="text-xs text-slate-700 leading-relaxed mb-3">{data.reasoning}</p>
+                            )}
+                            {data.comparison_to_industry_average && (
+                                <div className="mt-3 pt-3 border-t border-purple-200">
+                                    <p className="text-[9px] font-bold text-purple-900/60 uppercase tracking-widest mb-1.5">Industry Comparison</p>
+                                    <p className="text-xs text-slate-600 leading-relaxed">{data.comparison_to_industry_average}</p>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* What's Working / Missing */}
+                    {data.what_is_working_or_missing && (
+                        <div className="grid md:grid-cols-2 gap-4">
+                            {data.what_is_working_or_missing.working && (
+                                <div className="bg-emerald-50 rounded-lg p-4 border border-emerald-100">
+                                    <p className="text-[9px] font-bold text-emerald-800 uppercase tracking-widest mb-3">What's Working</p>
+                                    <div className="flex gap-2 text-xs text-emerald-900 leading-relaxed">
+                                        <CheckCircle2 size={14} className="text-emerald-600 flex-shrink-0 mt-0.5" />
+                                        <span>{data.what_is_working_or_missing.working}</span>
+                                    </div>
+                                </div>
+                            )}
+                            {data.what_is_working_or_missing.missing && (
+                                <div className="bg-rose-50 rounded-lg p-4 border border-rose-100">
+                                    <p className="text-[9px] font-bold text-rose-800 uppercase tracking-widest mb-3">What's Missing</p>
+                                    <div className="flex gap-2 text-xs text-rose-900 leading-relaxed">
+                                        <AlertTriangle size={14} className="text-rose-600 flex-shrink-0 mt-0.5" />
+                                        <span>{data.what_is_working_or_missing.missing}</span>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Recommendations */}
+                    {data.recommendations && data.recommendations.length > 0 && (
+                        <div>
+                            <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-3">Optimization Recommendations</h3>
+                            <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
+                                <ul className="divide-y divide-slate-100">
+                                    {data.recommendations.map((rec, i) => (
+                                        <li key={i} className="p-4 hover:bg-slate-50 transition-colors">
+                                            <div className="flex gap-3">
+                                                <CheckCircle2 size={16} className="text-purple-600 flex-shrink-0 mt-0.5" />
+                                                <p className="text-slate-900 text-xs leading-relaxed">{parseFormattedText(rec)}</p>
+                                            </div>
+                                        </li>
+                                    ))}
+                                </ul>
                             </div>
                         </div>
                     )}
 
-                    {data.recommendations && Array.isArray(data.recommendations) && (
+                    {/* Psychological Triggers */}
+                    {data.psychological_triggers_to_boost_engagement && data.psychological_triggers_to_boost_engagement.length > 0 && (
                         <div>
-                            <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-3">Optimization Vectors</h3>
-                            <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
-                                <ul className="divide-y divide-slate-100">
-                                    {data.recommendations.map((rec, i) => {
-                                        const recText = typeof rec === 'string' ? rec : rec.action || rec.explanation || JSON.stringify(rec);
-                                        return (
-                                            <li key={i} className="p-3 flex gap-3 hover:bg-slate-50 transition-colors">
-                                                <CheckCircle2 size={16} className="text-purple-600 flex-shrink-0 mt-0.5" />
-                                                <span className="text-slate-600 text-[11px] leading-relaxed">{parseFormattedText(recText)}</span>
-                                            </li>
-                                        );
-                                    })}
+                            <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-3">Psychological Triggers</h3>
+                            <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-lg p-4 border border-purple-100">
+                                <ul className="space-y-2">
+                                    {data.psychological_triggers_to_boost_engagement.map((trigger, i) => (
+                                        <li key={i} className="text-xs text-slate-700 flex items-start gap-2">
+                                            <span className="text-purple-600 font-bold flex-shrink-0">•</span>
+                                            <span className="leading-relaxed">{parseFormattedText(trigger)}</span>
+                                        </li>
+                                    ))}
                                 </ul>
                             </div>
                         </div>
@@ -391,7 +517,9 @@ const renderServiceContent = (serviceKey, data) => {
                     {data.platforms && Object.entries(data.platforms).map(([platform, platformData]) => (
                         <div key={platform} className="bg-white border border-slate-200 rounded-lg p-4 hover:border-indigo-200 transition-colors">
                             <div className="flex items-center justify-between mb-3">
-                                <h4 className="font-bold text-slate-900 capitalize text-sm">{platform}</h4>
+                                <h4 className="font-bold text-slate-900 capitalize text-sm">
+                                    {platform.replace('_', ' ').replace('x twitter', 'X (Twitter)')}
+                                </h4>
                                 {platformData.score && (
                                     <span className="px-1.5 py-0.5 bg-indigo-50 text-indigo-700 text-[10px] font-bold rounded border border-indigo-100">
                                         SCORE: {platformData.score}/10
@@ -400,10 +528,29 @@ const renderServiceContent = (serviceKey, data) => {
                             </div>
 
                             <div className="space-y-3">
+                                {platformData.reasoning && (
+                                    <div>
+                                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Analysis</p>
+                                        <p className="text-[11px] text-slate-600 leading-relaxed">{platformData.reasoning}</p>
+                                    </div>
+                                )}
                                 {platformData.strategy && (
                                     <div>
                                         <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Ecosystem Strategy</p>
                                         <p className="text-[11px] text-slate-600 leading-relaxed">{platformData.strategy}</p>
+                                    </div>
+                                )}
+                                {platformData.optimization_tips && platformData.optimization_tips.length > 0 && (
+                                    <div>
+                                        <p className="text-[9px] font-bold text-indigo-600 uppercase tracking-widest mb-2">Optimization Tips</p>
+                                        <ul className="space-y-1.5">
+                                            {platformData.optimization_tips.map((tip, i) => (
+                                                <li key={i} className="text-[11px] text-slate-600 flex items-start gap-2">
+                                                    <span className="w-1 h-1 rounded-full bg-indigo-400 mt-1.5 flex-shrink-0"></span>
+                                                    {tip}
+                                                </li>
+                                            ))}
+                                        </ul>
                                     </div>
                                 )}
                             </div>
@@ -415,31 +562,55 @@ const renderServiceContent = (serviceKey, data) => {
         case 'copyright_protection':
             return (
                 <div className="space-y-4">
-                    <div className={`rounded-xl p-4 border ${data.riskLevel === 'low' ? 'bg-emerald-50 border-emerald-100' :
-                        data.riskLevel === 'medium' ? 'bg-amber-50 border-amber-100' :
+                    <div className={`rounded-xl p-4 border ${data.risk_level?.toLowerCase() === 'low' ? 'bg-emerald-50 border-emerald-100' :
+                        data.risk_level?.toLowerCase() === 'medium' ? 'bg-amber-50 border-amber-100' :
                             'bg-rose-50 border-rose-100'
                         }`}>
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 mb-3">
                             <Shield size={20} className={
-                                data.riskLevel === 'low' ? 'text-emerald-600' :
-                                    data.riskLevel === 'medium' ? 'text-amber-600' : 'text-rose-600'
+                                data.risk_level?.toLowerCase() === 'low' ? 'text-emerald-600' :
+                                    data.risk_level?.toLowerCase() === 'medium' ? 'text-amber-600' : 'text-rose-600'
                             } />
                             <div>
-                                <h4 className={`text-xs font-bold capitalize ${data.riskLevel === 'low' ? 'text-emerald-800' :
-                                    data.riskLevel === 'medium' ? 'text-amber-800' : 'text-rose-800'
-                                    }`}>Assessment: {data.riskLevel} Risk</h4>
+                                <h4 className={`text-xs font-bold uppercase ${data.risk_level?.toLowerCase() === 'low' ? 'text-emerald-800' :
+                                    data.risk_level?.toLowerCase() === 'medium' ? 'text-amber-800' : 'text-rose-800'
+                                    }`}>Assessment: {data.risk_level} Risk</h4>
                             </div>
                         </div>
+                        {data.reasoning && (
+                            <p className="text-xs text-slate-700 leading-relaxed">{data.reasoning}</p>
+                        )}
                     </div>
 
-                    {data.recommendations && (
+                    {data.flags && data.flags.length > 0 && (
+                        <div className="bg-amber-50 rounded-xl border border-amber-100 p-4">
+                            <p className="text-[9px] font-bold text-amber-800 uppercase tracking-widest mb-3">Detected Flags</p>
+                            <ul className="space-y-2">
+                                {data.flags.map((flag, i) => (
+                                    <li key={i} className="flex gap-2 text-[11px] text-amber-900">
+                                        <AlertTriangle size={14} className="text-amber-600 flex-shrink-0" />
+                                        <span>{flag}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
+
+                    {data.assessment && (
+                        <div className="bg-slate-50 rounded-xl border border-slate-200 p-4">
+                            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-2">Detailed Assessment</p>
+                            <p className="text-xs text-slate-700 leading-relaxed">{data.assessment}</p>
+                        </div>
+                    )}
+
+                    {data.recommendations && Array.isArray(data.recommendations) && data.recommendations.length > 0 && (
                         <div className="bg-white rounded-xl border border-slate-200 p-4">
                             <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-3">Compliance Measures</p>
                             <ul className="space-y-2">
-                                {Array.isArray(data.recommendations) && data.recommendations.map((rec, i) => (
+                                {data.recommendations.map((rec, i) => (
                                     <li key={i} className="flex gap-2 text-[11px] text-slate-600">
-                                        <CheckCircle2 size={14} className="text-emerald-500 flex-shrink-0" />
-                                        <span>{typeof rec === 'string' ? rec : rec.action || JSON.stringify(rec)}</span>
+                                        <CheckCircle2 size={14} className="text-emerald-500 flex-shrink-0 mt-0.5" />
+                                        <span>{rec}</span>
                                     </li>
                                 ))}
                             </ul>
@@ -453,22 +624,31 @@ const renderServiceContent = (serviceKey, data) => {
                 <div className="space-y-6">
                     {data.transformativeness_score !== undefined && (
                         <div className="bg-amber-50/50 rounded-xl p-4 border border-amber-100 flex items-center justify-between">
-                            <div>
-                                <h4 className="text-[10px] font-bold text-amber-900/60 uppercase tracking-widest mb-1">Transformativeness Score</h4>
-                                <p className="text-xs text-amber-800 font-medium leading-relaxed">{data.assessment}</p>
+                            <div className="flex-1">
+                                <h4 className="text-[10px] font-bold text-amber-900/60 uppercase tracking-widest mb-2">Fair Use Score</h4>
+                                {data.reasoning && (
+                                    <p className="text-xs text-amber-800 font-medium leading-relaxed">{data.reasoning}</p>
+                                )}
                             </div>
                             <div className="flex flex-col items-center justify-center p-3 bg-white rounded-xl border border-amber-100 shadow-sm min-w-[80px]">
                                 <span className="text-2xl font-bold text-amber-600">{data.transformativeness_score}</span>
-                                <span className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">Index</span>
+                                <span className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">/ 100</span>
                             </div>
                         </div>
                     )}
 
-                    {data.fair_use_factors_breakdown && (
+                    {data.assessment && (
+                        <div className="bg-white rounded-xl border border-slate-200 p-4">
+                            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-2">Assessment</p>
+                            <p className="text-xs text-slate-700 leading-relaxed">{data.assessment}</p>
+                        </div>
+                    )}
+
+                    {data.fair_use_factors && (
                         <div>
                             <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-4">Factor Attribution</h3>
                             <div className="grid gap-3">
-                                {Object.entries(data.fair_use_factors_breakdown).map(([factor, factorData]) => (
+                                {Object.entries(data.fair_use_factors).map(([factor, factorData]) => (
                                     <div key={factor} className="bg-white border border-slate-200 rounded-xl p-4 hover:border-amber-100 transition-colors">
                                         <div className="flex items-start justify-between mb-2">
                                             <h4 className="text-[11px] font-bold text-slate-900 capitalize tracking-tight leading-tight">
@@ -476,15 +656,25 @@ const renderServiceContent = (serviceKey, data) => {
                                             </h4>
                                             {factorData.score !== undefined && (
                                                 <span className="text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-100">
-                                                    {factorData.score}/100
+                                                    {factorData.score}/25
                                                 </span>
                                             )}
                                         </div>
                                         <p className="text-[11px] text-slate-500 leading-relaxed italic">
-                                            {parseFormattedText(factorData.reasoning)}
+                                            {parseFormattedText(factorData.description || factorData.reasoning)}
                                         </p>
                                     </div>
                                 ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {data.recommendation_for_legal_safety && (
+                        <div className="bg-emerald-50 rounded-xl border border-emerald-100 p-4">
+                            <p className="text-[9px] font-bold text-emerald-800 uppercase tracking-widest mb-3">Legal Safety Recommendations</p>
+                            <div className="flex gap-2 text-xs text-emerald-900 leading-relaxed">
+                                <CheckCircle2 size={14} className="text-emerald-600 flex-shrink-0 mt-0.5" />
+                                <span>{data.recommendation_for_legal_safety}</span>
                             </div>
                         </div>
                     )}
@@ -494,7 +684,7 @@ const renderServiceContent = (serviceKey, data) => {
         case 'trend_intelligence':
             return (
                 <div className="space-y-6">
-                    {data.trending_topics && (
+                    {data.trending_topics && data.trending_topics.length > 0 && (
                         <div>
                             <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-4">Market Velocity Index</h3>
                             <div className="grid gap-4">
@@ -508,12 +698,12 @@ const renderServiceContent = (serviceKey, data) => {
                                                 {topic.growth_percentage && (
                                                     <span className="flex items-center gap-1 px-2 py-1 bg-rose-50 text-rose-600 text-[10px] font-bold rounded-lg border border-rose-100">
                                                         <TrendingUp size={12} />
-                                                        +{topic.growth_percentage}%
+                                                        {topic.growth_percentage}
                                                     </span>
                                                 )}
                                                 {topic.relevance_rating && (
                                                     <span className="px-2 py-1 bg-slate-900 text-white text-[10px] font-bold rounded-lg uppercase tracking-tight">
-                                                        REL: {topic.relevance_rating}
+                                                        REL: {topic.relevance_rating}/10
                                                     </span>
                                                 )}
                                             </div>
@@ -521,6 +711,40 @@ const renderServiceContent = (serviceKey, data) => {
                                         <p className="text-[11px] text-slate-500 leading-relaxed">
                                             {parseFormattedText(topic.reasoning)}
                                         </p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {data.predictions && data.predictions.length > 0 && (
+                        <div>
+                            <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-4">Predictive Insights</h3>
+                            <div className="bg-indigo-50/50 rounded-xl border border-indigo-100 p-4">
+                                <ul className="space-y-2">
+                                    {data.predictions.map((prediction, i) => (
+                                        <li key={i} className="flex gap-2 text-[11px] text-indigo-900">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-1.5 flex-shrink-0"></span>
+                                            <span className="leading-relaxed">{prediction}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        </div>
+                    )}
+
+                    {data.actionable_content_ideas && data.actionable_content_ideas.length > 0 && (
+                        <div>
+                            <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-4">Actionable Content Ideas</h3>
+                            <div className="grid gap-3">
+                                {data.actionable_content_ideas.map((idea, i) => (
+                                    <div key={i} className="bg-white border border-slate-200 rounded-lg p-4 hover:border-rose-100 transition-colors">
+                                        <div className="flex gap-3">
+                                            <div className="flex-shrink-0 w-6 h-6 rounded-full bg-rose-100 flex items-center justify-center text-[10px] font-bold text-rose-600">
+                                                {i + 1}
+                                            </div>
+                                            <p className="text-xs text-slate-700 leading-relaxed">{parseFormattedText(idea)}</p>
+                                        </div>
                                     </div>
                                 ))}
                             </div>

@@ -1,8 +1,52 @@
-import { Check, Sparkles, Zap, Crown } from 'lucide-react';
+import { Check, Sparkles, Zap, Crown, Loader2, Lock } from 'lucide-react';
 import FadeIn from '../components/ui/FadeIn';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { authApi } from '../services/api';
+import { useState } from 'react';
 
 const Pricing = () => {
+  const { isLoggedIn, user, updateUser } = useAuth();
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState(null);
+
+  const handlePlanSelection = async (planName) => {
+    // Premium plans show payment gateway message
+    if (planName === 'pro' || planName === 'team') {
+      return; // Do nothing, tooltip will show
+    }
+
+    if (!isLoggedIn) {
+      // Not logged in, redirect to register
+      navigate('/register');
+      return;
+    }
+
+    // Already on free plan
+    if (user?.plan?.toLowerCase() === 'free') {
+      navigate('/audit');
+      return;
+    }
+
+    setLoading(true);
+    setSelectedPlan(planName);
+
+    try {
+      const updatedUser = await authApi.updatePlan(planName);
+      updateUser(updatedUser);
+
+      // Redirect to audit after successful plan selection
+      setTimeout(() => {
+        navigate('/audit');
+      }, 500);
+    } catch (error) {
+      console.error('Failed to update plan:', error);
+      alert('Failed to update plan. Please try again.');
+      setLoading(false);
+    }
+  };
+
   const plans = [
     {
       name: "Free",
@@ -16,12 +60,13 @@ const Pricing = () => {
         "Copyright scan",
         "Email delivery"
       ],
-      cta: "Get Started Free",
+      ctaLoggedOut: "Get Started Free",
+      ctaLoggedIn: "Select Free Plan",
       popular: false
     },
     {
       name: "Pro",
-      price: "29",
+      price: "19",
       description: "For serious creators",
       icon: Zap,
       color: "sky",
@@ -32,7 +77,8 @@ const Pricing = () => {
         "Trend predictions",
         "Priority support"
       ],
-      cta: "Start Pro Trial",
+      ctaLoggedOut: "Start Pro Trial",
+      ctaLoggedIn: "Select Pro Plan",
       popular: true
     },
     {
@@ -48,7 +94,8 @@ const Pricing = () => {
         "API access",
         "Priority 24/7"
       ],
-      cta: "Contact Sales",
+      ctaLoggedOut: "Contact Sales",
+      ctaLoggedIn: "Select Team Plan",
       popular: false
     }
   ];
@@ -112,15 +159,46 @@ const Pricing = () => {
                     ))}
                   </ul>
 
-                  <Link
-                    to="/register"
-                    className={`block w-full text-center py-3 rounded-lg font-bold text-[10px] uppercase tracking-widest transition-all ${plan.popular
-                      ? 'bg-slate-900 text-white shadow-lg shadow-slate-200 hover:bg-slate-800'
-                      : 'bg-slate-100 text-slate-900 hover:bg-slate-200'
-                      }`}
-                  >
-                    {plan.cta}
-                  </Link>
+                  {/* Premium Plan - Coming Soon */}
+                  {(plan.name === 'Pro' || plan.name === 'Team') ? (
+                    <div className="relative group">
+                      <button
+                        disabled
+                        className="block w-full text-center py-3 rounded-lg font-bold text-[10px] uppercase tracking-widest transition-all bg-slate-200 text-slate-500 cursor-not-allowed"
+                      >
+                        <span className="inline-flex items-center gap-2">
+                          <Lock size={14} />
+                          Coming Soon
+                        </span>
+                      </button>
+                      {/* Tooltip */}
+                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-4 py-2 bg-slate-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap shadow-lg">
+                        Payment Gateway will be activated soon
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-900"></div>
+                      </div>
+                    </div>
+                  ) : (
+                    /* Free Plan - Active */
+                    <button
+                      onClick={() => handlePlanSelection(plan.name.toLowerCase())}
+                      disabled={loading && selectedPlan === plan.name.toLowerCase()}
+                      className={`block w-full text-center py-3 rounded-lg font-bold text-[10px] uppercase tracking-widest transition-all disabled:opacity-50 disabled:cursor-not-allowed ${plan.popular
+                        ? 'bg-slate-900 text-white shadow-lg shadow-slate-200 hover:bg-slate-800'
+                        : 'bg-slate-100 text-slate-900 hover:bg-slate-200'
+                        } ${user?.plan?.toLowerCase() === plan.name.toLowerCase() ? 'ring-2 ring-sky-500' : ''}`}
+                    >
+                      {loading && selectedPlan === plan.name.toLowerCase() ? (
+                        <span className="inline-flex items-center gap-2">
+                          <Loader2 className="animate-spin" size={14} />
+                          Updating...
+                        </span>
+                      ) : user?.plan?.toLowerCase() === plan.name.toLowerCase() ? (
+                        'Current Plan'
+                      ) : (
+                        isLoggedIn ? plan.ctaLoggedIn : plan.ctaLoggedOut
+                      )}
+                    </button>
+                  )}
                 </div>
               </FadeIn>
             );

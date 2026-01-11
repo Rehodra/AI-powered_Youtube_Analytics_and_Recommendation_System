@@ -5,7 +5,7 @@ from typing import Optional
 from authlib.integrations.starlette_client import OAuth
 from starlette.requests import Request
 
-from app.schemas.schemas import UserRegister, UserLogin, TokenResponse, UserResponse, ProfileUpdate
+from app.schemas.schemas import UserRegister, UserLogin, TokenResponse, UserResponse, ProfileUpdate, PlanUpdate
 from app.utils.auth import hash_password, verify_password, create_jwt, get_current_user
 from app.services import mongo_client
 from app.services.cloudinary_service import upload_avatar, delete_avatar
@@ -286,6 +286,63 @@ async def delete_user_avatar(user: dict = Depends(get_current_user)):
     }
     
     await mongo_client.update_user(user_id, update_data)
+    
+    # Get updated user
+    user = await mongo_client.get_user_by_id(user_id)
+    
+    return UserResponse(
+        user_id=user["_id"],
+        email=user["email"],
+        username=user["username"],
+        full_name=user.get("full_name"),
+        avatar_url=user.get("avatar_url"),
+        plan=user.get("plan", "free"),
+        credits_used=user.get("credits_used", 0),
+        credits_limit=user.get("credits_limit", 100),
+        is_verified=user.get("is_verified", False)
+    )
+
+
+@router.put("/plan", response_model=UserResponse)
+async def update_plan(
+    plan_data: PlanUpdate,
+    user: dict = Depends(get_current_user)
+):
+    """
+    Update user's pricing plan
+    """
+    user_id = user["_id"]
+    
+    # Validate plan
+    valid_plans = ["free", "pro", "team"]
+    plan = plan_data.plan.lower()
+    
+    if plan not in valid_plans:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid plan. Must be one of: {', '.join(valid_plans)}"
+        )
+    
+    # Update credits limit based on plan
+    credits_limit = 100  # free
+    if plan == "pro":
+        credits_limit = 1000
+    elif plan == "team":
+        credits_limit = 10000
+    
+    # Update user
+    update_data = {
+        "plan": plan,
+        "credits_limit": credits_limit,
+        "updated_at": datetime.utcnow()
+    }
+    
+    success = await mongo_client.update_user(user_id, update_data)
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to update plan"
+        )
     
     # Get updated user
     user = await mongo_client.get_user_by_id(user_id)

@@ -44,6 +44,7 @@ const Register = () => {
     const result = await register(userData);
 
     if (result.success) {
+      // Users start with free plan, go directly to audit
       navigate('/audit');
     } else {
       setError(result.error);

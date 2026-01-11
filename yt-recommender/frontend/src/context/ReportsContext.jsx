@@ -19,11 +19,14 @@ export const ReportsProvider = ({ children }) => {
     useEffect(() => {
         if (user?.user_id) {
             const storageKey = `reports_${user.user_id}`;
+            console.log('[ReportsContext] Loading reports for user:', user.user_id);
             const savedReports = localStorage.getItem(storageKey);
 
             if (savedReports) {
                 try {
-                    setReports(JSON.parse(savedReports));
+                    const parsed = JSON.parse(savedReports);
+                    console.log('[ReportsContext] Loaded reports:', parsed.length);
+                    setReports(parsed);
                 } catch (error) {
                     console.error('Failed to parse reports:', error);
                     setReports([]);
@@ -34,6 +37,7 @@ export const ReportsProvider = ({ children }) => {
                 if (oldReports) {
                     try {
                         const parsedOldReports = JSON.parse(oldReports);
+                        console.log('[ReportsContext] Migrating old reports:', parsedOldReports.length);
                         setReports(parsedOldReports);
                         // Save to new user-specific key
                         localStorage.setItem(storageKey, oldReports);
@@ -45,10 +49,12 @@ export const ReportsProvider = ({ children }) => {
                         setReports([]);
                     }
                 } else {
+                    console.log('[ReportsContext] No reports found for user');
                     setReports([]);
                 }
             }
         } else {
+            console.log('[ReportsContext] No user logged in, clearing reports');
             setReports([]);
         }
     }, [user?.user_id]);
@@ -57,6 +63,7 @@ export const ReportsProvider = ({ children }) => {
     useEffect(() => {
         if (user?.user_id && reports.length >= 0) {
             const storageKey = `reports_${user.user_id}`;
+            console.log('[ReportsContext] Saving reports:', reports.length, 'for user:', user.user_id);
             localStorage.setItem(storageKey, JSON.stringify(reports));
         }
     }, [reports, user?.user_id]);

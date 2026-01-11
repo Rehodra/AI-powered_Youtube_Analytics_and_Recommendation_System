@@ -12,11 +12,13 @@ import {
     Search
 } from 'lucide-react';
 import FadeIn from '../components/ui/FadeIn';
+import ConfirmModal from '../components/ui/ConfirmModal';
 
 const Reports = () => {
     const { reports, deleteReport, clearAllReports } = useReports();
     const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState('');
+    const [confirmModal, setConfirmModal] = useState({ isOpen: false, type: null, reportId: null, channelName: '' });
 
     const formatDate = (isoString) => {
         const date = new Date(isoString);
@@ -174,9 +176,12 @@ const Reports = () => {
                                         <button
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                if (window.confirm('Permanently delete this report?')) {
-                                                    deleteReport(report.id);
-                                                }
+                                                setConfirmModal({
+                                                    isOpen: true,
+                                                    type: 'single',
+                                                    reportId: report.id,
+                                                    channelName: report.channelName || 'Channel Analysis'
+                                                });
                                             }}
                                             className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
                                         >
@@ -192,17 +197,34 @@ const Reports = () => {
                 {reports.length > 0 && (
                     <div className="mt-8 text-center border-t border-slate-100 pt-6">
                         <button
-                            onClick={() => {
-                                if (window.confirm('Erase all intelligence history? This cannot be undone.')) {
-                                    clearAllReports();
-                                }
-                            }}
-                            className="text-[10px] font-bold text-slate-300 hover:text-red-600 transition-colors uppercase tracking-[0.2em]"
+                            onClick={() => setConfirmModal({ isOpen: true, type: 'all', reportId: null })}
+                            className="px-4 py-2 bg-red-500/10 text-red-600 hover:bg-red-500/20 border border-red-200 rounded-lg text-[10px] font-bold transition-all uppercase tracking-[0.2em]"
                         >
-                            Flush System History
+                            Clear Report History
                         </button>
                     </div>
                 )}
+
+                {/* Confirm Modal */}
+                <ConfirmModal
+                    isOpen={confirmModal.isOpen}
+                    onClose={() => setConfirmModal({ isOpen: false, type: null, reportId: null, channelName: '' })}
+                    onConfirm={() => {
+                        if (confirmModal.type === 'single') {
+                            deleteReport(confirmModal.reportId);
+                        } else if (confirmModal.type === 'all') {
+                            clearAllReports();
+                        }
+                    }}
+                    title={confirmModal.type === 'all' ? 'Clear All Reports?' : 'Delete Report?'}
+                    message={confirmModal.type === 'all'
+                        ? 'This will permanently delete all your analysis reports. This action cannot be undone.'
+                        : `This will permanently delete the report for "${confirmModal.channelName}". This action cannot be undone.`
+                    }
+                    confirmText="Delete"
+                    cancelText="Cancel"
+                    variant="danger"
+                />
             </div>
         </div>
     );

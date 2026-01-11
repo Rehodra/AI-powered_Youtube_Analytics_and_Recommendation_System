@@ -51,6 +51,11 @@ export const authApi = {
     return response.data;
   },
 
+  updatePlan: async (plan) => {
+    const response = await api.put('/auth/plan', { plan });
+    return response.data;
+  },
+
   deleteAccount: async () => {
     await api.delete('/auth/account');
   }

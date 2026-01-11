@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Youtube, LogOut, Menu, X, FileText, Settings, ChevronDown, BarChart3 } from "lucide-react";
+import { Youtube, LogOut, Menu, X, FileText, ChevronDown, BarChart3, User } from "lucide-react";
 
 const Navbar = ({ isLoggedIn, user, onLogout }) => {
   const navigate = useNavigate();
@@ -104,13 +104,16 @@ const Navbar = ({ isLoggedIn, user, onLogout }) => {
                     <span>Reports</span>
                   </Link>
 
-                  <Link
-                    to="/audit"
-                    className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white text-sm font-medium rounded-lg hover:bg-slate-800 transition-all shadow-sm"
-                  >
-                    <BarChart3 size={18} />
-                    <span>New Audit</span>
-                  </Link>
+                  {/* Hide New Audit button on Reports page */}
+                  {location.pathname !== '/reports' && (
+                    <Link
+                      to="/audit"
+                      className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white text-sm font-medium rounded-lg hover:bg-slate-800 transition-all shadow-sm"
+                    >
+                      <BarChart3 size={18} />
+                      <span>New Audit</span>
+                    </Link>
+                  )}
                 </div>
 
                 {/* Profile Dropdown */}
@@ -151,14 +154,6 @@ const Navbar = ({ isLoggedIn, user, onLogout }) => {
                         </div>
                         <div className="border-t border-slate-100 my-1"></div>
                         <Link
-                          to="/profile"
-                          onClick={() => setProfileDropdownOpen(false)}
-                          className="flex items-center gap-3 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
-                        >
-                          <Settings size={16} className="text-slate-400" />
-                          <span>Settings</span>
-                        </Link>
-                        <Link
                           to="/reports"
                           onClick={() => setProfileDropdownOpen(false)}
                           className="flex items-center gap-3 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors md:hidden"
@@ -177,6 +172,14 @@ const Navbar = ({ isLoggedIn, user, onLogout }) => {
                       </div>
 
                       <div className="border-t border-slate-100 pt-1 pb-1">
+                        <Link
+                          to="/profile"
+                          onClick={() => setProfileDropdownOpen(false)}
+                          className="flex items-center gap-3 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+                        >
+                          <User size={16} className="text-slate-400" />
+                          <span>Profile</span>
+                        </Link>
                         <button
                           onClick={() => {
                             setProfileDropdownOpen(false);
@@ -190,6 +193,7 @@ const Navbar = ({ isLoggedIn, user, onLogout }) => {
                       </div>
                     </div>
                   )}
+
                 </div>
               </>
             )}

@@ -132,17 +132,131 @@ OUTPUT FORMAT (STRICT)
 Return VALID JSON ONLY.
 No markdown. No explanations outside JSON.
 
+CRITICAL: Follow this EXACT schema. Do not add, remove, or rename fields.
+Use the exact field names shown below (case-sensitive, with underscores).
+
 JSON STRUCTURE:
 {{
   "services": {{
-    "semantic_title_engine": {{"analysis": "...", "suggestions": [...] }},
-    "predictive_ctr_analysis": {{"score": 0-100, "recommendations": [...] }},
-    "multi_platform_mastery": {{"platforms": {{ "youtube": "...", "tiktok": "...", "instagram": "..." }} }},
-    "copyright_protection": {{"risk_level": "low | medium | high", "flags": [...] }},
-    "fair_use_analysis": {{"score": 0-100, "assessment": "..." }},
-    "trend_intelligence": {{"trending_topics": [...], "predictions": [...] }}
+    "semantic_title_engine": {{
+      "channel_analysis": {{
+        "overall_assessment": "string - detailed channel title strategy analysis"
+      }},
+      "suggestions": [
+        {{
+          "original_title": "string - exact current title",
+          "current_issues": ["string issue 1", "string issue 2", "string issue 3"],
+          "alternative_titles": [
+            {{
+              "new_suggested_title": "string - alternative title",
+              "ctr_potential_rating": 8,
+              "why_it_s_effective": "string - psychology explanation"
+            }},
+            {{
+              "new_suggested_title": "string - alternative title 2",
+              "ctr_potential_rating": 7,
+              "why_it_s_effective": "string - psychology explanation"
+            }},
+            {{
+              "new_suggested_title": "string - alternative title 3",
+              "ctr_potential_rating": 9,
+              "why_it_s_effective": "string - psychology explanation"
+            }}
+          ]
+        }}
+      ],
+      "growth_tips": ["string tip 1", "string tip 2", "string tip 3"]
+    }},
+    
+    "predictive_ctr_analysis": {{
+      "score": 5.5,
+      "reasoning": "string - explanation of score",
+      "comparison_to_industry_average": "string - industry comparison",
+      "what_is_working_or_missing": {{
+        "working": "string paragraph - what's working well",
+        "missing": "string paragraph - what's missing"
+      }},
+      "recommendations": ["string rec 1", "string rec 2", "string rec 3"],
+      "potential_increase": "30-50%",
+      "psychological_triggers_to_boost_engagement": ["string trigger 1", "string trigger 2"]
+    }},
+    
+    "multi_platform_mastery": {{
+      "platforms": {{
+        "youtube": {{
+          "score": 9,
+          "reasoning": "string - why this score",
+          "strategy": "string - platform-specific strategy",
+          "optimization_tips": ["string tip 1", "string tip 2"]
+        }},
+        "x_twitter": {{
+          "score": 6,
+          "reasoning": "string - why this score",
+          "strategy": "string - platform-specific strategy",
+          "optimization_tips": ["string tip 1", "string tip 2"]
+        }},
+        "linkedin": {{
+          "score": 7,
+          "reasoning": "string - why this score",
+          "strategy": "string - platform-specific strategy",
+          "optimization_tips": ["string tip 1", "string tip 2"]
+        }}
+      }}
+    }},
+    
+    "copyright_protection": {{
+      "risk_level": "LOW",
+      "flags": ["string flag 1", "string flag 2"],
+      "assessment": "string - detailed assessment",
+      "recommendations": ["string rec 1", "string rec 2"]
+    }},
+    
+    "fair_use_analysis": {{
+      "score": 90,
+      "reasoning": "string - explanation of score",
+      "assessment": "string - detailed fair use assessment",
+      "fair_use_factors_breakdown": {{
+        "purpose_and_character": {{
+          "score": 9,
+          "reasoning": "string - explanation"
+        }},
+        "nature_of_work": {{
+          "score": 8,
+          "reasoning": "string - explanation"
+        }},
+        "amount_used": {{
+          "score": 7,
+          "reasoning": "string - explanation"
+        }},
+        "market_effect": {{
+          "score": 9,
+          "reasoning": "string - explanation"
+        }}
+      }},
+      "recommendation_for_legal_safety": "string - actionable legal guidance"
+    }},
+    
+    "trend_intelligence": {{
+      "trending_topics": [
+        {{
+          "name": "string - topic name",
+          "growth_percentage": "12%",
+          "relevance_rating": 9,
+          "reasoning": "string - why relevant"
+        }}
+      ],
+      "predictions": ["string prediction 1", "string prediction 2"],
+      "actionable_content_ideas": ["string idea 1", "string idea 2"]
+    }}
   }}
 }}
+
+FIELD NAME RULES:
+- Use snake_case (underscores): "channel_analysis", "current_issues", "why_it_s_effective"
+- NOT camelCase: "channelAnalysis", "currentIssues", "whyItsEffective"
+- risk_level values: "LOW", "MEDIUM", or "HIGH" (uppercase)
+- Scores are numbers (not strings): 5.5, 90, 8
+- Arrays must contain strings or objects as shown above
 
 Remember:
 - Include ONLY requested services
